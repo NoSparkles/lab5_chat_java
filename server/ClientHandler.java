@@ -11,6 +11,7 @@ public class ClientHandler implements Runnable {
     private BufferedReader in;
     private Map<String, Room> rooms;
     private Room currentRoom;
+    private String username;
 
     public ClientHandler(Socket socket, Map<String, Room> rooms) {
         this.socket = socket;
@@ -23,13 +24,26 @@ public class ClientHandler implements Runnable {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
 
-            out.println("Įveskite kambario pavadinimą:");
-            String roomName = in.readLine();
-            currentRoom = rooms.computeIfAbsent(roomName, Room::new);
-            currentRoom.addClient(this);
+            String clientData = in.readLine();
+            
+            if (clientData.startsWith("JOIN#")) {
+                String[] userData = clientData.split("#");
 
-            out.println("Prisijungėte prie kambario: " + roomName);
+                if (userData.length == 3) {
+                    username = userData[1].trim();
+                    String roomName = userData[2].trim();
 
+                    currentRoom = rooms.computeIfAbsent(roomName, Room::new);
+                    currentRoom.addClient(this);
+
+                    out.println("Prisijungėte kaip " + username + " prie kambario: " + roomName);
+                } else {
+                    out.println("Neteisingas formatas! Bandykite dar kartą.");
+                    return;
+                }
+            }
+
+            // ✅ Dabar priimame ir retransliuojame žinutes
             String message;
             while ((message = in.readLine()) != null) {
                 currentRoom.broadcast(message);

@@ -22,6 +22,7 @@ public class PrimaryController {
     private PrintWriter out;
     private BufferedReader in;
     private String username;
+    private String roomName;
 
     @FXML
     private TextField usernameField;
@@ -71,10 +72,11 @@ public class PrimaryController {
     @FXML
     private void joinRoom() {
         username = usernameField.getText();
-        String roomName = roomNameField.getText();
+        roomName = roomNameField.getText();
 
         if (!username.isEmpty() && !roomName.isEmpty()) {
-            out.println(username + " prisijungė prie kambario: " + roomName);
+            // ✅ Aiškesnis formatas: "JOIN#VartotojoVardas#KambarioPavadinimas"
+            out.println("JOIN#" + username + "#" + roomName);
             addMessageToChat("Prisijungta kaip " + username + " prie kambario: " + roomName);
         } else {
             addMessageToChat("Vartotojo vardas ir kambario pavadinimas negali būti tušti!");
@@ -87,6 +89,7 @@ public class PrimaryController {
 
         if (!message.isEmpty() && username != null && !username.isEmpty()) {
             out.println(username + ": " + message);
+            out.flush();  // ✅ Užtikrina, kad žinutė tikrai išsiunčiama
             messageField.clear();
         } else {
             addMessageToChat("Pirmiausia prisijunkite ir įveskite žinutę!");
@@ -98,8 +101,7 @@ public class PrimaryController {
             Label newMessage = new Label(message);
             newMessage.setWrapText(true);
             chatBox.getChildren().add(newMessage);
-            chatScrollPane.setVvalue(1.0); // Automatiškai nuskrollina į apačią
+            chatScrollPane.setVvalue(1.0); // ✅ Automatiškai nuskrollina į apačią
         });
     }
-
 }
