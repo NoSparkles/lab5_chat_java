@@ -74,7 +74,6 @@ public class PrimaryController {
 
                 // ✅ Send new join request
                 out.println("JOIN#" + username + "#" + roomName);
-                addMessageToChat("✅ Prisijungėte kaip " + username + " prie kambario: " + roomName);
 
                 // ✅ Start listening to messages again
                 startReceivingMessages();
@@ -146,7 +145,7 @@ public class PrimaryController {
             out.flush();
             messageField.clear();
         } else {
-            addMessageToChat("⚠️ Pirmiausia prisijunkite ir įveskite žinutę!");
+            addMessageToChat("⚠️ Prisijunkite ir/arba įveskite žinutę!");
         }
     }
 
