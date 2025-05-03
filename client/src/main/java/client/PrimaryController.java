@@ -52,34 +52,73 @@ public class PrimaryController {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> onClose()));
     }
 
+    @FXML
+    private void joinRoom() {
+        String newUsername = usernameField.getText();
+        String newRoomName = roomNameField.getText();
+
+        if (!newUsername.isEmpty() && !newRoomName.isEmpty()) {
+            // ✅ If already connected, close the current connection before reconnecting
+            if (socket != null && !socket.isClosed()) {
+                onClose(); // Close existing connection
+            }
+
+            // ✅ Create a new socket and reconnect
+            try {
+                socket = new Socket(SERVER_ADDRESS, PORT);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(socket.getOutputStream(), true);
+
+                username = newUsername;
+                roomName = newRoomName;
+
+                // ✅ Send new join request
+                out.println("JOIN#" + username + "#" + roomName);
+                addMessageToChat("✅ Prisijungėte kaip " + username + " prie kambario: " + roomName);
+
+                // ✅ Start listening to messages again
+                startReceivingMessages();
+
+            } catch (IOException e) {
+                addMessageToChat("⚠️ Klaida jungiantis prie serverio: " + e.getMessage());
+            }
+        } else {
+            addMessageToChat("⚠️ Vartotojo vardas ir kambario pavadinimas negali būti tušti!");
+        }
+    }
+
     private void connectToServer() {
         try {
             socket = new Socket(SERVER_ADDRESS, PORT);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
-
-            receiveThread = new Thread(() -> {
-                try {
-                    String serverMessage;
-                    while (!socket.isClosed() && (serverMessage = in.readLine()) != null) {
-                        addMessageToChat(serverMessage);
-                    }
-                } catch (IOException e) {
-                    System.out.println("⚠️ Klaida skaitant serverio žinutę: " + e.getMessage());
-                }
-            });
-
-            receiveThread.setDaemon(true); // ✅ Allow this thread to stop when the application closes
-            receiveThread.start();
-
+    
+            startReceivingMessages(); // ✅ Start listening for incoming messages
+    
         } catch (IOException e) {
-            addMessageToChat("Nepavyko prisijungti prie serverio...");
+            addMessageToChat("⚠️ Nepavyko prisijungti prie serverio: " + e.getMessage());
         }
+    }
+
+    private void startReceivingMessages() {
+        receiveThread = new Thread(() -> {
+            try {
+                String serverMessage;
+                while (!socket.isClosed() && (serverMessage = in.readLine()) != null) {
+                    addMessageToChat(serverMessage);
+                }
+            } catch (IOException e) {
+                System.out.println("⚠️ Klaida skaitant serverio žinutę: " + e.getMessage());
+            }
+        });
+
+        receiveThread.setDaemon(true); // ✅ Ensure thread stops when app closes
+        receiveThread.start();
     }
 
     @FXML
     private void onClose() {
-        System.out.println("❌ Uždaro klientą...");
+        System.out.println("❌ Atsijungia nuo dabartinio kambario...");
 
         // ✅ Stop receiving messages
         if (receiveThread != null && receiveThread.isAlive()) {
@@ -96,21 +135,6 @@ public class PrimaryController {
         } catch (IOException e) {
             System.out.println("⚠️ Klaida uždarant ryšį: " + e.getMessage());
         }
-
-        Platform.exit(); // ✅ Close JavaFX
-        System.exit(0);  // ✅ Fully terminate program
-    }
-
-    @FXML
-    private void joinRoom() {
-        username = usernameField.getText();
-        roomName = roomNameField.getText();
-
-        if (!username.isEmpty() && !roomName.isEmpty()) {
-            out.println("JOIN#" + username + "#" + roomName);
-        } else {
-            addMessageToChat("Vartotojo vardas ir kambario pavadinimas negali būti tušti!");
-        }
     }
 
     @FXML
@@ -122,7 +146,7 @@ public class PrimaryController {
             out.flush();
             messageField.clear();
         } else {
-            addMessageToChat("Pirmiausia prisijunkite ir įveskite žinutę!");
+            addMessageToChat("⚠️ Pirmiausia prisijunkite ir įveskite žinutę!");
         }
     }
 
