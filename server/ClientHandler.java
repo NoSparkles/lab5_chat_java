@@ -21,38 +21,65 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
-
-            String clientData = in.readLine();
-            
-            if (clientData.startsWith("JOIN#")) {
+            try {
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(socket.getOutputStream(), true);
+            } catch (IOException e) {
+                System.out.println("⚠️ Klaida kuriant srautus: " + e.getMessage());
+                return; // Exit if stream initialization fails
+            }
+    
+            String clientData;
+            try {
+                clientData = in.readLine();
+            } catch (IOException e) {
+                System.out.println("⚠️ Klaida skaitant prisijungimo duomenis: " + e.getMessage());
+                return;
+            }
+    
+            if (clientData != null && clientData.startsWith("JOIN#")) {
                 String[] userData = clientData.split("#");
-
+    
                 if (userData.length == 3) {
                     username = userData[1].trim();
                     String roomName = userData[2].trim();
-
+    
                     currentRoom = rooms.computeIfAbsent(roomName, Room::new);
                     currentRoom.addClient(this);
-
+    
+                    currentRoom.broadcast("🔹 " + username + " prisijungė prie kambario!");
                     out.println("Prisijungėte kaip " + username + " prie kambario: " + roomName);
+                    System.out.println(username + " prisijungė prie kambario: " + roomName);
                 } else {
                     out.println("Neteisingas formatas! Bandykite dar kartą.");
                     return;
                 }
             }
-
-            // ✅ Dabar priimame ir retransliuojame žinutes
-            String message;
-            while ((message = in.readLine()) != null) {
-                currentRoom.broadcast(message);
+    
+            try {
+                String message;
+                while ((message = in.readLine()) != null) {
+                    currentRoom.broadcast(message);
+                }
+            } catch (IOException e) {
+                System.out.println("⚠️ Klaida skaitant žinutę: " + e.getMessage());
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         } finally {
-            if (currentRoom != null) {
+            if (currentRoom != null && username != null) {
                 currentRoom.removeClient(this);
+                currentRoom.broadcast("❌ " + username + " paliko kambarį!");
+                System.out.println(username + " paliko kambarį.");
+            }
+    
+            try {
+                if (socket != null && !socket.isClosed()) {
+                    socket.shutdownInput();
+                    socket.close();
+                }
+                if (in != null) in.close();
+                if (out != null) out.close();
+            } catch (IOException e) {
+                System.out.println("⚠️ Klaida uždarant ryšį: " + e.getMessage());
             }
         }
     }

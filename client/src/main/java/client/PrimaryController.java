@@ -23,6 +23,7 @@ public class PrimaryController {
     private BufferedReader in;
     private String username;
     private String roomName;
+    private Thread receiveThread;
 
     @FXML
     private TextField usernameField;
@@ -46,6 +47,9 @@ public class PrimaryController {
     private void initialize() {
         connectToServer();
         chatScrollPane.setFitToWidth(true);
+
+        // 🔹 Detect when the window is closed and shut down correctly
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> onClose()));
     }
 
     private void connectToServer() {
@@ -54,19 +58,47 @@ public class PrimaryController {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
 
-            new Thread(() -> {
+            receiveThread = new Thread(() -> {
                 try {
                     String serverMessage;
-                    while ((serverMessage = in.readLine()) != null) {
+                    while (!socket.isClosed() && (serverMessage = in.readLine()) != null) {
                         addMessageToChat(serverMessage);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println("⚠️ Klaida skaitant serverio žinutę: " + e.getMessage());
                 }
-            }).start();
+            });
+
+            receiveThread.setDaemon(true); // ✅ Allow this thread to stop when the application closes
+            receiveThread.start();
+
         } catch (IOException e) {
             addMessageToChat("Nepavyko prisijungti prie serverio...");
         }
+    }
+
+    @FXML
+    private void onClose() {
+        System.out.println("❌ Uždaro klientą...");
+
+        // ✅ Stop receiving messages
+        if (receiveThread != null && receiveThread.isAlive()) {
+            receiveThread.interrupt();
+        }
+
+        // ✅ Safely close connections
+        try {
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+            }
+            if (in != null) in.close();
+            if (out != null) out.close();
+        } catch (IOException e) {
+            System.out.println("⚠️ Klaida uždarant ryšį: " + e.getMessage());
+        }
+
+        Platform.exit(); // ✅ Close JavaFX
+        System.exit(0);  // ✅ Fully terminate program
     }
 
     @FXML
@@ -75,9 +107,7 @@ public class PrimaryController {
         roomName = roomNameField.getText();
 
         if (!username.isEmpty() && !roomName.isEmpty()) {
-            // ✅ Aiškesnis formatas: "JOIN#VartotojoVardas#KambarioPavadinimas"
             out.println("JOIN#" + username + "#" + roomName);
-            addMessageToChat("Prisijungta kaip " + username + " prie kambario: " + roomName);
         } else {
             addMessageToChat("Vartotojo vardas ir kambario pavadinimas negali būti tušti!");
         }
@@ -89,7 +119,7 @@ public class PrimaryController {
 
         if (!message.isEmpty() && username != null && !username.isEmpty()) {
             out.println(username + ": " + message);
-            out.flush();  // ✅ Užtikrina, kad žinutė tikrai išsiunčiama
+            out.flush();
             messageField.clear();
         } else {
             addMessageToChat("Pirmiausia prisijunkite ir įveskite žinutę!");
