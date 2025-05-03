@@ -74,15 +74,16 @@ public class PrimaryController {
 
                 // ✅ Send new join request
                 out.println("JOIN#" + username + "#" + roomName);
+                addMessageToChat("✅ Joined as " + username + " in room: " + roomName);
 
                 // ✅ Start listening to messages again
                 startReceivingMessages();
 
             } catch (IOException e) {
-                addMessageToChat("⚠️ Klaida jungiantis prie serverio: " + e.getMessage());
+                addMessageToChat("⚠️ Error connecting to server: " + e.getMessage());
             }
         } else {
-            addMessageToChat("⚠️ Vartotojo vardas ir kambario pavadinimas negali būti tušti!");
+            addMessageToChat("⚠️ Username and room name cannot be empty!");
         }
     }
 
@@ -95,7 +96,7 @@ public class PrimaryController {
             startReceivingMessages(); // ✅ Start listening for incoming messages
     
         } catch (IOException e) {
-            addMessageToChat("⚠️ Nepavyko prisijungti prie serverio: " + e.getMessage());
+            addMessageToChat("⚠️ Failed to connect to server: " + e.getMessage());
         }
     }
 
@@ -107,7 +108,7 @@ public class PrimaryController {
                     addMessageToChat(serverMessage);
                 }
             } catch (IOException e) {
-                System.out.println("⚠️ Klaida skaitant serverio žinutę: " + e.getMessage());
+                System.out.println("⚠️ Error reading server message: " + e.getMessage());
             }
         });
 
@@ -117,7 +118,7 @@ public class PrimaryController {
 
     @FXML
     private void onClose() {
-        System.out.println("❌ Atsijungia nuo dabartinio kambario...");
+        System.out.println("❌ Disconnecting from current room...");
 
         // ✅ Stop receiving messages
         if (receiveThread != null && receiveThread.isAlive()) {
@@ -132,7 +133,7 @@ public class PrimaryController {
             if (in != null) in.close();
             if (out != null) out.close();
         } catch (IOException e) {
-            System.out.println("⚠️ Klaida uždarant ryšį: " + e.getMessage());
+            System.out.println("⚠️ Error closing connection: " + e.getMessage());
         }
     }
 
@@ -145,7 +146,7 @@ public class PrimaryController {
             out.flush();
             messageField.clear();
         } else {
-            addMessageToChat("⚠️ Prisijunkite ir/arba įveskite žinutę!");
+            addMessageToChat("⚠️ Please join a room and enter a message!");
         }
     }
 
@@ -154,7 +155,7 @@ public class PrimaryController {
             Label newMessage = new Label(message);
             newMessage.setWrapText(true);
             chatBox.getChildren().add(newMessage);
-            chatScrollPane.setVvalue(1.0); // ✅ Automatiškai nuskrollina į apačią
+            chatScrollPane.setVvalue(1.0); // ✅ Automatically scrolls to the latest message
         });
     }
 }

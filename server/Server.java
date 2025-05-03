@@ -10,11 +10,11 @@ public class Server {
 
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            System.out.println("Serveris paleistas...");
+            System.out.println("Server is running...");
 
             while (true) {
                 Socket socket = serverSocket.accept();
-                System.out.println("Naujas vartotojas prisijungė.");
+                System.out.println("New user connected.");
                 new Thread(new ClientHandler(socket, rooms)).start();
             }
         } catch (IOException e) {
