@@ -108,12 +108,18 @@ public class ClientHandler implements Runnable {
     
         String roomName = parts[1].trim();
     
+        // ✅ Exit DM mode completely
+        if (directMessageRecipient != null) {
+            sendMessage("🔹 Left private chat with " + directMessageRecipient.username);
+            directMessageRecipient.sendMessage("🔹 " + username + " left the private chat.");
+            directMessageRecipient.directMessageRecipient = null; // ✅ Remove DM link on both sides
+            directMessageRecipient = null;
+        }
+    
         if (currentRoom != null) {
             currentRoom.removeClient(this);
             sendMessage("🔹 Left previous room: " + currentRoom.getName());
         }
-    
-        directMessageRecipient = null; // ✅ Exit DM mode
     
         currentRoom = rooms.computeIfAbsent(roomName, Room::new);
         currentRoom.addClient(this);
@@ -131,17 +137,17 @@ public class ClientHandler implements Runnable {
         }
     
         String recipientName = parts[1].trim();
+        ClientHandler recipientClient = clients.get(recipientName);
     
-        if (recipientName.contains("#")) {
-            recipientName = recipientName.replace("#", ""); // ✅ Ensure clean usernames
-        }
+        if (recipientClient != null) {
+            sendMessage("✅ Waiting for " + recipientName + " to start private chat...");
     
-        directMessageRecipient = clients.get(recipientName);
+            // ✅ First user enters DM mode, but second user does NOT automatically join
+            directMessageRecipient = recipientClient;
     
-        if (directMessageRecipient != null) {
-            sendMessage("✅ Started private chat with " + recipientName);
-            directMessageRecipient.sendMessage("🔹 " + username + " started a private chat with you.");
-            currentRoom = null; // ✅ Exit room mode
+            // ✅ Notify recipient that a DM request was sent, but they must opt in
+            recipientClient.sendMessage("🔹 " + username + " wants to start a private chat with you. Type JOIN_DM#" + username + " to accept.");
+    
         } else {
             sendMessage("⚠️ User " + recipientName + " is not available.");
         }
@@ -149,25 +155,31 @@ public class ClientHandler implements Runnable {
 
     private void handleDirectMessage(String message) {
         String[] msgParts = message.split("#");
+    
         if (msgParts.length != 3) {
             sendMessage("⚠️ Invalid DM format! Use DM#recipient#message");
             return;
         }
-
+    
         String recipientName = msgParts[1].trim();
         String msgContent = msgParts[2];
-
+    
         ClientHandler recipientClient = clients.get(recipientName);
-        if (recipientClient != null) {
+    
+        // ✅ Ensure both users have joined DM before sending messages
+        if (recipientClient != null && recipientClient.directMessageRecipient == this) {
             recipientClient.sendMessage("📩 (From " + username + "): " + msgContent);
         } else {
-            sendMessage("⚠️ User " + recipientName + " is not online. Message not sent.");
+            sendMessage("⚠️ User " + recipientName + " has not joined private chat yet.");
         }
     }
 
     private void handleRoomMessage(String message) {
-        String[] msgParts = message.split("#", 2);
+        if (directMessageRecipient != null) {
+            return; // ✅ Ignore room messages if in DM mode
+        }
     
+        String[] msgParts = message.split("#", 2);
         if (msgParts.length != 2) {
             sendMessage("⚠️ Invalid message format! Use MSG#message");
             return;

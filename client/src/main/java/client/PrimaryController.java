@@ -94,10 +94,14 @@ public class PrimaryController {
     @FXML
     private void joinRoom() {
         roomName = roomNameField.getText().trim();
-
+    
         if (!roomName.isEmpty() && socket != null && !socket.isClosed()) {
-            out.println("JOIN#" + roomName); // ✅ Corrected format without username prefix
+            out.println("JOIN#" + roomName); // ✅ Correct format
+    
             addMessageToChat("✅ Joined room: " + roomName);
+    
+            // ✅ Ensure user exits DM mode
+            recipientField.setText(""); // ✅ Clear DM recipient
         } else {
             addMessageToChat("⚠️ Please connect first and enter a room name!");
         }
@@ -109,6 +113,9 @@ public class PrimaryController {
     
         if (!recipient.isEmpty() && socket != null && !socket.isClosed()) {
             out.println("JOIN_DM#" + recipient); // ✅ Correct format
+    
+            // ✅ Clear room name field to indicate that the user is leaving the room
+            roomNameField.clear();
             addMessageToChat("🔹 Private chat started with " + recipient);
         } else {
             addMessageToChat("⚠️ Please connect first and enter a recipient username!");
