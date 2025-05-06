@@ -81,12 +81,11 @@ public class PrimaryController {
             out = new PrintWriter(socket.getOutputStream(), true);
 
             out.println("USERNAME#" + username); // ✅ Send username to the server
-            addMessageToChat("✅ Connected as " + username);
 
             startReceivingMessages();
 
         } catch (IOException e) {
-            addMessageToChat("⚠️ Failed to connect to server: " + e.getMessage());
+            addMessageToChat("Failed to connect to server: " + e.getMessage());
         }
         disabledBox.setDisable(false); // ✅ Enable buttons after connection
     }
@@ -98,7 +97,7 @@ public class PrimaryController {
         if (!roomName.isEmpty() && socket != null && !socket.isClosed()) {
             out.println("JOIN#" + roomName); // ✅ Correct format
     
-            addMessageToChat("✅ Joined room: " + roomName);
+            //addMessageToChat("Joined room: " + roomName);
     
             // ✅ Ensure user exits DM mode
             recipientField.setText(""); // ✅ Clear DM recipient
@@ -116,7 +115,6 @@ public class PrimaryController {
     
             // ✅ Clear room name field to indicate that the user is leaving the room
             roomNameField.clear();
-            addMessageToChat("🔹 Private chat started with " + recipient);
         } else {
             addMessageToChat("⚠️ Please connect first and enter a recipient username!");
         }
@@ -172,7 +170,7 @@ public class PrimaryController {
             out.flush();
             messageField.clear();
         } else {
-            addMessageToChat("⚠️ Please enter a message and/or recipient!");
+            addMessageToChat("Please enter a message and/or recipient!");
         }
     }
 

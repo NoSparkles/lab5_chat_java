@@ -2,3 +2,5 @@
 (2 aa ~sup2~)
 (2 rob ~sup2~)
 (3 rob ~labas grupe 3~)
+(3 aa ~labas~)
+(3 aa ~ff~)

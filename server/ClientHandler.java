@@ -43,7 +43,7 @@ public class ClientHandler implements Runnable {
 
     private void requestUsername() {
         try {
-            out.println("Enter your username:");
+            //out.println("Enter your username:");
             username = in.readLine();
     
             if (username == null || username.trim().isEmpty()) {
@@ -61,17 +61,17 @@ public class ClientHandler implements Runnable {
     
     
             if (clients.containsKey(username)) {
-                out.println("⚠️ Username already in use. Try a different one.");
+                out.println("Username already in use. Try a different one.");
                 socket.close();
                 return;
             }
     
             clients.put(username, this);
     
-            out.println("✅ Username locked in: " + username);
+            out.println("Username locked in: " + username);
             System.out.println("🔹 User connected: " + username);
         } catch (IOException e) {
-            System.out.println("⚠️ Error reading username: " + e.getMessage());
+            System.out.println("Error reading username: " + e.getMessage());
         }
     }
 
@@ -118,14 +118,12 @@ public class ClientHandler implements Runnable {
     
         if (currentRoom != null) {
             currentRoom.removeClient(this);
-            sendMessage("🔹 Left previous room: " + currentRoom.getName());
         }
     
         currentRoom = rooms.computeIfAbsent(roomName, Room::new);
         currentRoom.addClient(this);
     
-        sendMessage("✅ Joined room: " + roomName);
-        currentRoom.broadcast("🔹 " + username + " joined the room.");
+        currentRoom.broadcast(username + " joined the room.");
     }
 
     private void handleJoinDM(String message) {
@@ -140,13 +138,13 @@ public class ClientHandler implements Runnable {
         ClientHandler recipientClient = clients.get(recipientName);
     
         if (recipientClient != null) {
-            sendMessage("✅ Waiting for " + recipientName + " to start private chat...");
+            //sendMessage("✅ Waiting for " + recipientName + " to start private chat...");
     
             // ✅ First user enters DM mode, but second user does NOT automatically join
             directMessageRecipient = recipientClient;
     
             // ✅ Notify recipient that a DM request was sent, but they must opt in
-            recipientClient.sendMessage("🔹 " + username + " wants to start a private chat with you. Type JOIN_DM#" + username + " to accept.");
+            //recipientClient.sendMessage("🔹 " + username + " wants to start a private chat with you. Type JOIN_DM#" + username + " to accept.");
     
         } else {
             sendMessage("⚠️ User " + recipientName + " is not available.");
@@ -170,9 +168,9 @@ public class ClientHandler implements Runnable {
         DataHandler.appendToDMs(username, recipientName, msgContent);
     
         if (recipientClient != null && recipientClient.directMessageRecipient == this && this.directMessageRecipient == recipientClient) {
-            recipientClient.sendMessage("📩 (From " + username + "): " + msgContent);
+            recipientClient.sendMessage(username + ": " + msgContent);
         } else {
-            sendMessage("🔹 Message stored. " + recipientName + " will see it when they join DM.");
+            sendMessage(username + ": " + msgContent);
         }
     }
 
@@ -191,7 +189,7 @@ public class ClientHandler implements Runnable {
     
         if (currentRoom != null) {
             DataHandler.appendToRooms(currentRoom.getName(), username, msgContent); // ✅ Store message
-            currentRoom.broadcast("📝 (From " + username + "): " + msgContent);
+            currentRoom.broadcast(username + ": " + msgContent);
         } else {
             sendMessage("⚠️ You are not in a room. Join a room first.");
         }
@@ -200,15 +198,15 @@ public class ClientHandler implements Runnable {
     private void cleanUp() {
         if (username != null) {
             clients.remove(username);
-            System.out.println("❌ " + username + " disconnected.");
+            System.out.println(username + " disconnected.");
 
             if (currentRoom != null) {
                 currentRoom.removeClient(this);
-                currentRoom.broadcast("❌ " + username + " left the room.");
+                currentRoom.broadcast(username + " left the room.");
 
                 if (currentRoom.isEmpty()) {
                     rooms.remove(currentRoom.getName());
-                    System.out.println("🗑 Room \"" + currentRoom.getName() + "\" deleted because it's empty.");
+                    System.out.println("Room \"" + currentRoom.getName() + "\" deleted because it's empty.");
                 }
             }
         }
