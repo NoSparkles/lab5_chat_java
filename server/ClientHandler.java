@@ -142,25 +142,30 @@ public class ClientHandler implements Runnable {
         }
     
         String recipientName = parts[1].trim();
-        ClientHandler senderClient = clients.get(recipientName); // ✅ Find the user who originally started DM
+        ClientHandler recipientClient = clients.get(recipientName); // ✅ Find recipient in active clients
     
-        directMessageRecipient = senderClient;
+        // ✅ Store recipient but do NOT force them into DM
+        directMessageRecipient = recipientClient;
     
-        // ✅ If sender was waiting, fully link both users so they can now chat
-        if (senderClient != null && senderClient.directMessageRecipient == null) {
-            senderClient.directMessageRecipient = this;
+        // ✅ If recipient has already started DM and was waiting for user1, establish the connection
+        if (recipientClient != null && recipientClient.directMessageRecipient == this) {
+            recipientClient.sendMessage("✅ You are now connected with " + username);
+        } else if (recipientClient != null) {
+            // ✅ Notify recipient about pending DM request, but DO NOT redirect them
+            recipientClient.sendMessage("WAITING#" + username);
         }
     
-        // ✅ Retrieve stored messages for both users
+        // ✅ Retrieve stored messages and show them to the sender
         List<String> storedMessages = DataHandler.getDMMessages(username, recipientName);
         for (String storedMessage : storedMessages) {
             sendMessage(storedMessage);
         }
     
-        if (senderClient != null) {
-            List<String> storedMessagesForSender = DataHandler.getDMMessages(recipientName, username);
-            for (String storedMessage : storedMessagesForSender) {
-                senderClient.sendMessage(storedMessage);
+        // ✅ If recipient was waiting in DM, retrieve messages for them too
+        if (recipientClient != null && recipientClient.directMessageRecipient == this) {
+            List<String> storedMessagesForRecipient = DataHandler.getDMMessages(recipientName, username);
+            for (String storedMessage : storedMessagesForRecipient) {
+                recipientClient.sendMessage(storedMessage);
             }
         }
     }

@@ -129,13 +129,28 @@ public class PrimaryController {
             try {
                 String serverMessage;
                 while (!socket.isClosed() && (serverMessage = in.readLine()) != null) {
-                    addMessageToChat(serverMessage);
+                    addMessageToChat("before " + serverMessage);
+    
+                    // ✅ Auto-trigger joinDM() when a WAITING# request is received
+                    if (serverMessage.startsWith("WAITING#")) {
+                        String waitingUser = serverMessage.replace("WAITING#", "").trim();
+    
+                        // ✅ Ensure the recipient is correct before auto-joining
+                        if (recipientField.getText().equals(waitingUser)) {
+                            Platform.runLater(() -> {
+                                addMessageToChat("✅ Auto-joining DM with " + waitingUser + "...");
+                                joinDM();
+                            });
+                        }
+                    } else {
+                        addMessageToChat(serverMessage);
+                    }
                 }
             } catch (IOException e) {
                 System.out.println("⚠️ Error reading server message: " + e.getMessage());
             }
         });
-
+    
         receiveThread.setDaemon(true);
         receiveThread.start();
     }
