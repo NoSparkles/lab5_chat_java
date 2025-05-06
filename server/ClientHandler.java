@@ -28,7 +28,7 @@ public class ClientHandler implements Runnable {
                 System.out.println("⚠️ Error creating streams: " + e.getMessage());
                 return; // Exit if stream initialization fails
             }
-    
+
             String clientData;
             try {
                 clientData = in.readLine();
@@ -36,7 +36,7 @@ public class ClientHandler implements Runnable {
                 System.out.println("⚠️ Error reading client data: " + e.getMessage());
                 return;
             }
-    
+
             if (clientData != null && clientData.startsWith("JOIN#")) {
                 String[] userData = clientData.split("#");
 
@@ -68,6 +68,12 @@ public class ClientHandler implements Runnable {
                 currentRoom.removeClient(this);
                 currentRoom.broadcast("❌ " + username + " left the room!");
                 System.out.println(username + " left the room.");
+
+                // ✅ Remove room from HashMap if it's empty
+                if (currentRoom.isEmpty()) {
+                    rooms.remove(currentRoom.getRoomName());
+                    System.out.println("🗑 Room \"" + currentRoom.getRoomName() + "\" deleted because it's empty.");
+                }
             }
 
             try {
