@@ -146,6 +146,7 @@ public class PrimaryController {
                         if (currentDMLabel.getText().replace("DM with: ", "").equals(waitingUser)) {
                             Platform.runLater(() -> {
                                 addMessageToChat("✅ Auto-joining DM with " + waitingUser + "...");
+                                chatBox.getChildren().clear(); // ✅ Clear chatbox for new DM
                                 joinDM();
                             });
                         }

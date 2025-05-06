@@ -160,14 +160,6 @@ public class ClientHandler implements Runnable {
         for (String storedMessage : storedMessages) {
             sendMessage(storedMessage);
         }
-    
-        // ✅ If recipient was waiting in DM, retrieve messages for them too
-        if (recipientClient != null && recipientClient.directMessageRecipient == this) {
-            List<String> storedMessagesForRecipient = DataHandler.getDMMessages(recipientName, username);
-            for (String storedMessage : storedMessagesForRecipient) {
-                recipientClient.sendMessage(storedMessage);
-            }
-        }
     }
 
     private void handleDirectMessage(String message) {

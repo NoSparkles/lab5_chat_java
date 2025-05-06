@@ -42,13 +42,15 @@ public class DataHandler {
     public static synchronized List<String> getDMMessages(String user1, String user2) {
         List<String> messages = new ArrayList<>();
         for (String line : readFromFile(DM_FILE)) {
-            if (line.startsWith("(" + user1 + " " + user2 + " ~") || line.startsWith("(" + user2 + " " + user1 + " ~")) {
-                // ✅ Extract sender (first username) and message content
-                String formattedMessage = line.replaceFirst("\\(", "") // Remove opening parenthesis
-                                              .replaceFirst(" " + user2 + " ", ": ") // Remove recipient's name
-                                              .replaceFirst(" " + user1 + " ", ": ") // Handle flipped order
-                                              .replaceFirst(" ~", " ") // Replace the message delimiter
-                                              .replace("~)", ""); // Remove ending symbols
+            if (line.startsWith("(" + user1 + " " + user2 + " ~")) {
+                // ✅ Always show the real sender of the message
+                String sender = user1;
+                String formattedMessage = sender + ": " + line.replaceFirst("\\(" + user1 + " " + user2 + " ~", "").replace("~)", "");
+                messages.add(formattedMessage);
+            } else if (line.startsWith("(" + user2 + " " + user1 + " ~")) {
+                // ✅ Always show the real sender of the message
+                String sender = user2;
+                String formattedMessage = sender + ": " + line.replaceFirst("\\(" + user2 + " " + user1 + " ~", "").replace("~)", "");
                 messages.add(formattedMessage);
             }
         }
