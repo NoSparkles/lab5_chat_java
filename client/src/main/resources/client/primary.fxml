@@ -26,9 +26,11 @@
                         <Label text="Room Name" />
                         <TextField fx:id="roomNameField" promptText="Room" />
                         <Button mnemonicParsing="false" onAction="#joinRoom" text=" Join Room" />
+                        <Label fx:id="currentRoomLabel" />
                         <Label text="Or chat with" />
                         <TextField fx:id="recipientField" promptText="Username" />
                         <Button mnemonicParsing="false" onAction="#joinDM" text="Join DM" />
+                        <Label fx:id="currentDMLabel" />
                      </children>
                   </HBox>
                </children>

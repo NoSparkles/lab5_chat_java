@@ -149,7 +149,7 @@ public class ClientHandler implements Runnable {
     
         // ✅ If recipient has already started DM and was waiting for user1, establish the connection
         if (recipientClient != null && recipientClient.directMessageRecipient == this) {
-            recipientClient.sendMessage("✅ You are now connected with " + username);
+            //recipientClient.sendMessage("✅ You are now connected with " + username);
         } else if (recipientClient != null) {
             // ✅ Notify recipient about pending DM request, but DO NOT redirect them
             recipientClient.sendMessage("WAITING#" + username);

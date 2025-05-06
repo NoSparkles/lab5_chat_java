@@ -42,6 +42,12 @@ public class PrimaryController {
     private Button sendButton;
 
     @FXML
+    private Label currentRoomLabel; // ✅ New label to show current room
+
+    @FXML
+    private Label currentDMLabel; // ✅ New label to show current DM recipient
+
+    @FXML
     private Button connectButton; // ✅ New button to trigger connection
 
     @FXML
@@ -102,6 +108,8 @@ public class PrimaryController {
     
             // ✅ Ensure user exits DM mode
             recipientField.setText(""); // ✅ Clear DM recipient
+            currentDMLabel.setText(""); // ✅ Clear DM label
+            currentRoomLabel.setText("Room: " + roomName); // ✅ Show current room
         } else {
             addMessageToChat("⚠️ Please connect first and enter a room name!");
         }
@@ -119,6 +127,8 @@ public class PrimaryController {
     
             // ✅ Clear room name field to indicate that the user is leaving the room
             roomNameField.clear();
+            currentRoomLabel.setText(""); // ✅ Clear room label
+            currentDMLabel.setText("DM with: " + recipient); // ✅ Show DM recipient
         } else {
             addMessageToChat("⚠️ Please connect first and enter a recipient username!");
         }
@@ -129,14 +139,11 @@ public class PrimaryController {
             try {
                 String serverMessage;
                 while (!socket.isClosed() && (serverMessage = in.readLine()) != null) {
-                    addMessageToChat("before " + serverMessage);
-    
-                    // ✅ Auto-trigger joinDM() when a WAITING# request is received
                     if (serverMessage.startsWith("WAITING#")) {
                         String waitingUser = serverMessage.replace("WAITING#", "").trim();
     
                         // ✅ Ensure the recipient is correct before auto-joining
-                        if (recipientField.getText().equals(waitingUser)) {
+                        if (currentDMLabel.getText().replace("DM with: ", "").equals(waitingUser)) {
                             Platform.runLater(() -> {
                                 addMessageToChat("✅ Auto-joining DM with " + waitingUser + "...");
                                 joinDM();
@@ -157,7 +164,7 @@ public class PrimaryController {
 
     @FXML
     private void onClose() {
-        System.out.println("❌ Disconnecting from server...");
+        System.out.println("Disconnecting from server...");
 
         if (receiveThread != null && receiveThread.isAlive()) {
             receiveThread.interrupt();
@@ -170,7 +177,7 @@ public class PrimaryController {
             if (in != null) in.close();
             if (out != null) out.close();
         } catch (IOException e) {
-            System.out.println("⚠️ Error closing connection: " + e.getMessage());
+            System.out.println("Error closing connection: " + e.getMessage());
         }
     }
 
