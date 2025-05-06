@@ -112,7 +112,6 @@ public class ClientHandler implements Runnable {
         // ✅ Exit DM mode completely
         if (directMessageRecipient != null) {
             sendMessage("🔹 Left private chat with " + directMessageRecipient.username);
-            directMessageRecipient.sendMessage("🔹 " + username + " left the private chat.");
             directMessageRecipient.directMessageRecipient = null; // ✅ Remove DM link on both sides
             directMessageRecipient = null;
         }
@@ -200,7 +199,7 @@ public class ClientHandler implements Runnable {
             DataHandler.appendToRooms(currentRoom.getName(), username, msgContent); // ✅ Store message
             currentRoom.broadcast(username + ": " + msgContent);
         } else {
-            sendMessage("⚠️ You are not in a room. Join a room first.");
+            sendMessage("You are not in a room. Join a room first.");
         }
     }
 
