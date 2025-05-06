@@ -190,7 +190,7 @@ public class PrimaryController {
         if (!message.isEmpty() && username != null && !username.isEmpty()) {
             if (!recipient.isEmpty()) {
                 out.println("DM#" + recipient + "#" + message); // ✅ Correct DM format
-                addMessageToChat(recipient + ": " + message);
+                addMessageToChat(username + ": " + message);
             } else {
                 out.println("MSG#" + message); // ✅ Send regular message
             }
