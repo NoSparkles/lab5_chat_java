@@ -135,41 +135,41 @@ public class ClientHandler implements Runnable {
 
     private void handleJoinDM(String message) {
         String[] parts = message.split("#");
-
+    
         if (parts.length != 2) {
             sendMessage("⚠️ Invalid JOIN_DM format! Use JOIN_DM#username");
             return;
         }
-
+    
         String recipientName = parts[1].trim();
         ClientHandler recipientClient = clients.get(recipientName);
-
-        sendMessage("✅ Private chat started with " + recipientName);
-        directMessageRecipient = recipientClient;
-
-        // ✅ Retrieve stored messages and show them to the sender
+    
+        directMessageRecipient = recipientClient; // ✅ Store recipient but don’t redirect them yet
+    
+        // ✅ Retrieve and show stored messages immediately for the first user
         List<String> storedMessages = DataHandler.getDMMessages(username, recipientName);
         for (String storedMessage : storedMessages) {
             sendMessage(storedMessage);
         }
+
     }
 
     private void handleDirectMessage(String message) {
         String[] msgParts = message.split("#");
-
+    
         if (msgParts.length != 3) {
             sendMessage("⚠️ Invalid DM format! Use DM#recipient#message");
             return;
         }
-
+    
         String recipientName = msgParts[1].trim();
         String msgContent = msgParts[2];
-
-        // ✅ Always log the message, even if recipient is offline
+    
+        // ✅ Always log the message, even if recipient hasn’t joined DM yet
         DataHandler.appendToDMs(username, recipientName, msgContent);
-
+    
         ClientHandler recipientClient = clients.get(recipientName);
-
+    
         if (recipientClient != null && recipientClient.directMessageRecipient == this && this.directMessageRecipient == recipientClient) {
             recipientClient.sendMessage(username + ": " + msgContent);
         }
