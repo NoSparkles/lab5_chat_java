@@ -1,9 +1,9 @@
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Room {
     private String name;
-    private Set<ClientHandler> clients = new HashSet<>();
+    private Set<ClientHandler> clients = ConcurrentHashMap.newKeySet();
 
     public Room(String name) {
         this.name = name;

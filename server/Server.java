@@ -1,13 +1,13 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
     private static final int PORT = 12345;
-    private static Map<String, Room> rooms = new HashMap<>();
-    private static Map<String, ClientHandler> clients = new HashMap<>(); // ✅ Store individual clients for DMs
+    private static Map<String, Room> rooms = new ConcurrentHashMap<>();
+    private static Map<String, ClientHandler> clients = new ConcurrentHashMap<>(); // ✅ Store individual clients for DMs
 
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
