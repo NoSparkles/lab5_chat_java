@@ -8,7 +8,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="900.0" prefWidth="1440.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.PrimaryController">
    <children>
       <VBox layoutX="160.0" layoutY="149.0" prefHeight="602.0" prefWidth="1121.0" spacing="10.0">
@@ -25,7 +24,10 @@
                      <children>
                         <Label text="Room Name" />
                         <TextField fx:id="roomNameField" promptText="Room" />
-                        <Button mnemonicParsing="false" onAction="#joinRoom" text="Join" />
+                        <Button mnemonicParsing="false" onAction="#joinRoom" text=" Join Room" />
+                        <Label text="Or chat with" />
+                        <TextField promptText="Username" />
+                        <Button mnemonicParsing="false" text="Chat With a User" />
                      </children>
                   </HBox>
                </children>
