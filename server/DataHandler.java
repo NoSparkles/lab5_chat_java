@@ -29,18 +29,27 @@ public class DataHandler {
         List<String> messages = new ArrayList<>();
         for (String line : readFromFile(ROOM_FILE)) {
             if (line.startsWith("(" + roomName + " ")) { // ✅ Filter by room name
-                messages.add(line);
+                // ✅ Extract username and message content
+                String formattedMessage = line.replaceFirst("\\(" + roomName + " ", "")
+                                              .replaceFirst(" ~", ": ")
+                                              .replace("~)", "");
+                messages.add(formattedMessage);
             }
         }
         return messages;
     }
 
-    // ✅ Retrieve all DM messages between two users (synchronized)
     public static synchronized List<String> getDMMessages(String user1, String user2) {
         List<String> messages = new ArrayList<>();
         for (String line : readFromFile(DM_FILE)) {
             if (line.startsWith("(" + user1 + " " + user2 + " ~") || line.startsWith("(" + user2 + " " + user1 + " ~")) {
-                messages.add(line);
+                // ✅ Extract sender (first username) and message content
+                String formattedMessage = line.replaceFirst("\\(", "") // Remove opening parenthesis
+                                              .replaceFirst(" " + user2 + " ", ": ") // Remove recipient's name
+                                              .replaceFirst(" " + user1 + " ", ": ") // Handle flipped order
+                                              .replaceFirst(" ~", " ") // Replace the message delimiter
+                                              .replace("~)", ""); // Remove ending symbols
+                messages.add(formattedMessage);
             }
         }
         return messages;

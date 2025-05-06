@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 import java.util.Map;
 
 public class ClientHandler implements Runnable {
@@ -128,49 +129,48 @@ public class ClientHandler implements Runnable {
 
     private void handleJoinDM(String message) {
         String[] parts = message.split("#");
-    
+
         if (parts.length != 2) {
             sendMessage("⚠️ Invalid JOIN_DM format! Use JOIN_DM#username");
             return;
         }
-    
+
         String recipientName = parts[1].trim();
         ClientHandler recipientClient = clients.get(recipientName);
-    
+
+        sendMessage("✅ Private chat started with " + recipientName);
+        directMessageRecipient = recipientClient;
+
+        // ✅ Retrieve stored messages and show them to the sender
+        List<String> storedMessages = DataHandler.getDMMessages(username, recipientName);
+        for (String storedMessage : storedMessages) {
+            sendMessage(storedMessage);
+        }
+
+        // ✅ If recipient is online, notify them about pending messages
         if (recipientClient != null) {
-            //sendMessage("✅ Waiting for " + recipientName + " to start private chat...");
-    
-            // ✅ First user enters DM mode, but second user does NOT automatically join
-            directMessageRecipient = recipientClient;
-    
-            // ✅ Notify recipient that a DM request was sent, but they must opt in
-            //recipientClient.sendMessage("🔹 " + username + " wants to start a private chat with you. Type JOIN_DM#" + username + " to accept.");
-    
-        } else {
-            sendMessage("⚠️ User " + recipientName + " is not available.");
+            recipientClient.sendMessage("🔹 " + username + " wants to start a private chat with you.");
         }
     }
 
     private void handleDirectMessage(String message) {
         String[] msgParts = message.split("#");
-    
+
         if (msgParts.length != 3) {
             sendMessage("⚠️ Invalid DM format! Use DM#recipient#message");
             return;
         }
-    
+
         String recipientName = msgParts[1].trim();
         String msgContent = msgParts[2];
-    
-        ClientHandler recipientClient = clients.get(recipientName);
-    
-        // ✅ Always log the message, even if the recipient is not connected
+
+        // ✅ Always log the message, even if recipient is offline
         DataHandler.appendToDMs(username, recipientName, msgContent);
-    
+
+        ClientHandler recipientClient = clients.get(recipientName);
+
         if (recipientClient != null && recipientClient.directMessageRecipient == this && this.directMessageRecipient == recipientClient) {
             recipientClient.sendMessage(username + ": " + msgContent);
-        } else {
-            sendMessage(username + ": " + msgContent);
         }
     }
 

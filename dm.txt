@@ -3,3 +3,7 @@
 (aa rob ~labas rob~)
 (bb aa ~labas tau~)
 (aa bb ~ff~)
+(aa gg ~fd~)
+(aa bb ~fdfdfd~)
+(bb aa ~ff~)
+(bb aa ~fdfdfd~)
