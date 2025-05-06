@@ -16,18 +16,19 @@
                <children>
                   <Label text="Username:" />
                   <TextField fx:id="usernameField" promptText="Username" />
+                  <Button fx:id="connectButton" mnemonicParsing="false" onAction="#connectToServer" text="Connect" />
                </children>
             </HBox>
             <VBox prefHeight="27.0" prefWidth="1121.0">
                <children>
-                  <HBox alignment="CENTER_LEFT" prefHeight="31.0" prefWidth="1121.0" spacing="20.0">
+                  <HBox fx:id="disabledBox" alignment="CENTER_LEFT" disable="true" prefHeight="31.0" prefWidth="1121.0" spacing="20.0">
                      <children>
                         <Label text="Room Name" />
                         <TextField fx:id="roomNameField" promptText="Room" />
                         <Button mnemonicParsing="false" onAction="#joinRoom" text=" Join Room" />
                         <Label text="Or chat with" />
-                        <TextField promptText="Username" />
-                        <Button mnemonicParsing="false" text="Chat With a User" />
+                        <TextField fx:id="recipientField" promptText="Username" />
+                        <Button mnemonicParsing="false" onAction="#joinDM" text="Chat With a User" />
                      </children>
                   </HBox>
                </children>

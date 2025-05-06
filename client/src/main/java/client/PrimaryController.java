@@ -12,6 +12,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class PrimaryController {
@@ -32,10 +33,19 @@ public class PrimaryController {
     private TextField roomNameField;
 
     @FXML
+    private TextField recipientField; // ✅ New field for DM
+
+    @FXML
     private TextField messageField;
 
     @FXML
     private Button sendButton;
+
+    @FXML
+    private Button connectButton; // ✅ New button to trigger connection
+
+    @FXML
+    private HBox disabledBox; // ✅ New HBox to disable buttons when not connected
 
     @FXML
     private ScrollPane chatScrollPane;
@@ -45,7 +55,6 @@ public class PrimaryController {
 
     @FXML
     private void initialize() {
-        connectToServer();
         chatScrollPane.setFitToWidth(true);
 
         // 🔹 Detect when the window is closed and shut down correctly
@@ -53,50 +62,56 @@ public class PrimaryController {
     }
 
     @FXML
-    private void joinRoom() {
-        String newUsername = usernameField.getText();
-        String newRoomName = roomNameField.getText();
-
-        if (!newUsername.isEmpty() && !newRoomName.isEmpty()) {
-            // ✅ If already connected, close the current connection before reconnecting
-            if (socket != null && !socket.isClosed()) {
-                onClose(); // Close existing connection
-            }
-
-            // ✅ Create a new socket and reconnect
-            try {
-                socket = new Socket(SERVER_ADDRESS, PORT);
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                out = new PrintWriter(socket.getOutputStream(), true);
-
-                username = newUsername;
-                roomName = newRoomName;
-
-                // ✅ Send new join request
-                out.println("JOIN#" + username + "#" + roomName);
-                addMessageToChat("✅ Joined as " + username + " in room: " + roomName);
-
-                // ✅ Start listening to messages again
-                startReceivingMessages();
-
-            } catch (IOException e) {
-                addMessageToChat("⚠️ Error connecting to server: " + e.getMessage());
-            }
-        } else {
-            addMessageToChat("⚠️ Username and room name cannot be empty!");
-        }
-    }
-
     private void connectToServer() {
+        username = usernameField.getText().trim();
+
+        if (username.isEmpty()) {
+            addMessageToChat("⚠️ Please enter a username before connecting!");
+            return;
+        }
+
+        if (socket != null && !socket.isClosed()) {
+            addMessageToChat("⚠️ Already connected!");
+            return;
+        }
+
         try {
             socket = new Socket(SERVER_ADDRESS, PORT);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
-    
-            startReceivingMessages(); // ✅ Start listening for incoming messages
-    
+
+            out.println("USERNAME#" + username); // ✅ Send username to the server
+            addMessageToChat("✅ Connected as " + username);
+
+            startReceivingMessages();
+
         } catch (IOException e) {
             addMessageToChat("⚠️ Failed to connect to server: " + e.getMessage());
+        }
+        disabledBox.setDisable(false); // ✅ Enable buttons after connection
+    }
+
+    @FXML
+    private void joinRoom() {
+        roomName = roomNameField.getText().trim();
+
+        if (!roomName.isEmpty() && socket != null && !socket.isClosed()) {
+            out.println("JOIN#" + roomName); // ✅ Corrected format without username prefix
+            addMessageToChat("✅ Joined room: " + roomName);
+        } else {
+            addMessageToChat("⚠️ Please connect first and enter a room name!");
+        }
+    }
+
+    @FXML
+    private void joinDM() {
+        String recipient = recipientField.getText().trim();
+    
+        if (!recipient.isEmpty() && socket != null && !socket.isClosed()) {
+            out.println("JOIN_DM#" + recipient); // ✅ Correct format
+            addMessageToChat("🔹 Private chat started with " + recipient);
+        } else {
+            addMessageToChat("⚠️ Please connect first and enter a recipient username!");
         }
     }
 
@@ -112,20 +127,18 @@ public class PrimaryController {
             }
         });
 
-        receiveThread.setDaemon(true); // ✅ Ensure thread stops when app closes
+        receiveThread.setDaemon(true);
         receiveThread.start();
     }
 
     @FXML
     private void onClose() {
-        System.out.println("❌ Disconnecting from current room...");
+        System.out.println("❌ Disconnecting from server...");
 
-        // ✅ Stop receiving messages
         if (receiveThread != null && receiveThread.isAlive()) {
             receiveThread.interrupt();
         }
 
-        // ✅ Safely close connections
         try {
             if (socket != null && !socket.isClosed()) {
                 socket.close();
@@ -139,14 +152,20 @@ public class PrimaryController {
 
     @FXML
     private void sendMessage() {
-        String message = messageField.getText();
-
+        String message = messageField.getText().trim();
+        String recipient = recipientField.getText().trim();
+    
         if (!message.isEmpty() && username != null && !username.isEmpty()) {
-            out.println(username + ": " + message);
+            if (!recipient.isEmpty()) {
+                out.println("DM#" + recipient + "#" + message); // ✅ Correct DM format
+                addMessageToChat("📩 (To " + recipient + "): " + message);
+            } else {
+                out.println("MSG#" + message); // ✅ Send regular message
+            }
             out.flush();
             messageField.clear();
         } else {
-            addMessageToChat("⚠️ Please join a room and enter a message!");
+            addMessageToChat("⚠️ Please enter a message and/or recipient!");
         }
     }
 
@@ -155,7 +174,7 @@ public class PrimaryController {
             Label newMessage = new Label(message);
             newMessage.setWrapText(true);
             chatBox.getChildren().add(newMessage);
-            chatScrollPane.setVvalue(1.0); // ✅ Automatically scrolls to the latest message
+            chatScrollPane.setVvalue(1.0);
         });
     }
 }
