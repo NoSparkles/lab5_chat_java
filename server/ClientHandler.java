@@ -137,28 +137,39 @@ public class ClientHandler implements Runnable {
         String[] parts = message.split("#");
     
         if (parts.length != 2) {
-            sendMessage("⚠️ Invalid JOIN_DM format! Use JOIN_DM#username");
+            sendMessage("Invalid JOIN_DM format! Use JOIN_DM#username");
             return;
         }
     
         String recipientName = parts[1].trim();
-        ClientHandler recipientClient = clients.get(recipientName);
+        ClientHandler senderClient = clients.get(recipientName); // ✅ Find the user who originally started DM
     
-        directMessageRecipient = recipientClient; // ✅ Store recipient but don’t redirect them yet
+        directMessageRecipient = senderClient;
     
-        // ✅ Retrieve and show stored messages immediately for the first user
+        // ✅ If sender was waiting, fully link both users so they can now chat
+        if (senderClient != null && senderClient.directMessageRecipient == null) {
+            senderClient.directMessageRecipient = this;
+        }
+    
+        // ✅ Retrieve stored messages for both users
         List<String> storedMessages = DataHandler.getDMMessages(username, recipientName);
         for (String storedMessage : storedMessages) {
             sendMessage(storedMessage);
         }
-
+    
+        if (senderClient != null) {
+            List<String> storedMessagesForSender = DataHandler.getDMMessages(recipientName, username);
+            for (String storedMessage : storedMessagesForSender) {
+                senderClient.sendMessage(storedMessage);
+            }
+        }
     }
 
     private void handleDirectMessage(String message) {
         String[] msgParts = message.split("#");
     
         if (msgParts.length != 3) {
-            sendMessage("⚠️ Invalid DM format! Use DM#recipient#message");
+            sendMessage("Invalid DM format! Use DM#recipient#message");
             return;
         }
     

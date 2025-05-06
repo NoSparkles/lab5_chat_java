@@ -66,12 +66,12 @@ public class PrimaryController {
         username = usernameField.getText().trim();
 
         if (username.isEmpty()) {
-            addMessageToChat("⚠️ Please enter a username before connecting!");
+            addMessageToChat("Please enter a username before connecting!");
             return;
         }
 
         if (socket != null && !socket.isClosed()) {
-            addMessageToChat("⚠️ Already connected!");
+            addMessageToChat("Already connected!");
             return;
         }
 
@@ -167,7 +167,7 @@ public class PrimaryController {
         if (!message.isEmpty() && username != null && !username.isEmpty()) {
             if (!recipient.isEmpty()) {
                 out.println("DM#" + recipient + "#" + message); // ✅ Correct DM format
-                addMessageToChat("📩 (To " + recipient + "): " + message);
+                addMessageToChat(recipient + ": " + message);
             } else {
                 out.println("MSG#" + message); // ✅ Send regular message
             }
