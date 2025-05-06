@@ -166,11 +166,13 @@ public class ClientHandler implements Runnable {
     
         ClientHandler recipientClient = clients.get(recipientName);
     
-        // ✅ Ensure both users have joined DM before sending messages
-        if (recipientClient != null && recipientClient.directMessageRecipient == this) {
+        // ✅ Always log the message, even if the recipient is not connected
+        DataHandler.appendToDMs(username, recipientName, msgContent);
+    
+        if (recipientClient != null && recipientClient.directMessageRecipient == this && this.directMessageRecipient == recipientClient) {
             recipientClient.sendMessage("📩 (From " + username + "): " + msgContent);
         } else {
-            sendMessage("⚠️ User " + recipientName + " has not joined private chat yet.");
+            sendMessage("🔹 Message stored. " + recipientName + " will see it when they join DM.");
         }
     }
 
@@ -188,6 +190,7 @@ public class ClientHandler implements Runnable {
         String msgContent = msgParts[1].trim();
     
         if (currentRoom != null) {
+            DataHandler.appendToRooms(currentRoom.getName(), username, msgContent); // ✅ Store message
             currentRoom.broadcast("📝 (From " + username + "): " + msgContent);
         } else {
             sendMessage("⚠️ You are not in a room. Join a room first.");
