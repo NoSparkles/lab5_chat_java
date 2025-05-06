@@ -96,8 +96,9 @@ public class PrimaryController {
     
         if (!roomName.isEmpty() && socket != null && !socket.isClosed()) {
             out.println("JOIN#" + roomName); // ✅ Correct format
-    
-            //addMessageToChat("Joined room: " + roomName);
+
+            // ✅ Clear chatbox when joining a new room
+            chatBox.getChildren().clear();
     
             // ✅ Ensure user exits DM mode
             recipientField.setText(""); // ✅ Clear DM recipient
@@ -112,6 +113,9 @@ public class PrimaryController {
     
         if (!recipient.isEmpty() && socket != null && !socket.isClosed()) {
             out.println("JOIN_DM#" + recipient); // ✅ Correct format
+
+            // ✅ Clear chatbox when switching to DM
+            chatBox.getChildren().clear();
     
             // ✅ Clear room name field to indicate that the user is leaving the room
             roomNameField.clear();

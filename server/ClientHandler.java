@@ -125,6 +125,12 @@ public class ClientHandler implements Runnable {
         currentRoom.addClient(this);
     
         currentRoom.broadcast(username + " joined the room.");
+
+        // ✅ Retrieve stored messages for the room
+        List<String> storedMessages = DataHandler.getRoomMessages(roomName);
+        for (String storedMessage : storedMessages) {
+            sendMessage(storedMessage);
+        }
     }
 
     private void handleJoinDM(String message) {
@@ -145,11 +151,6 @@ public class ClientHandler implements Runnable {
         List<String> storedMessages = DataHandler.getDMMessages(username, recipientName);
         for (String storedMessage : storedMessages) {
             sendMessage(storedMessage);
-        }
-
-        // ✅ If recipient is online, notify them about pending messages
-        if (recipientClient != null) {
-            recipientClient.sendMessage("🔹 " + username + " wants to start a private chat with you.");
         }
     }
 

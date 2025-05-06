@@ -5,3 +5,6 @@
 (3 aa ~labas~)
 (3 aa ~ff~)
 (2 aa ~fff~)
+(1 aa ~ff~)
+(1 aa ~l~)
+(1 bb ~fff~)
